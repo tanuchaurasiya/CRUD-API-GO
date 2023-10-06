@@ -1,5 +1,6 @@
 package main
 
+
 import (
 	"encoding/json"
 	"fmt"
@@ -7,6 +8,7 @@ import (
 	"math/rand"
 	"net/http"
 	"strconv"
+
 	"github.com/gorilla/mux"
 )
 
@@ -17,14 +19,14 @@ type Movie struct {
 	Director *Director `json:"director"`
 }
 type Director struct {
-	FirstName string `json:firstname"`
-	LastName  string `json:lastname"`
+	FirstName string `json:"firstname"`
+	LastName  string `json:"lastname"`
 }
 
 func getMovies(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(movies)
-	
+
 }
 
 func deleteMovie(w http.ResponseWriter, r *http.Request) {
@@ -51,12 +53,15 @@ func getMovie(w http.ResponseWriter, r *http.Request) {
 }
 
 func createMovie(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 	var m Movie
-	_ = json.NewDecoder(r.Body).Decode(m)
+	err := json.NewDecoder(r.Body).Decode(&m)
+	if err != nil {
+		log.Fatal(err)
+	}
 	m.ID = strconv.Itoa(rand.Intn(10000))
 	movies = append(movies, m)
-	json.NewEncoder(w).Encode(movies)
+	json.NewEncoder(w).Encode(m)
 }
 
 func updateMovie(w http.ResponseWriter, r *http.Request) {
@@ -66,7 +71,7 @@ func updateMovie(w http.ResponseWriter, r *http.Request) {
 		if movi.ID == params["id"] {
 			movies = append(movies[:index], movies[index+1:]...)
 			var m Movie
-			_ = json.NewDecoder(r.Body).Decode(m)
+			_ = json.NewDecoder(r.Body).Decode(&m)
 			m.ID = params["id"]
 			movies = append(movies, m)
 			json.NewEncoder(w).Encode(movies)
@@ -91,3 +96,5 @@ func main() {
 	fmt.Println("starting server at port 8080")
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
+
+
